@@ -1,5 +1,9 @@
 # Java-Project-TextEditor
-This project builds a Text Editor by Java.
+This project builds a Text Editor by Java with a simply tester.
 To run it:
 1. Please import JUnit library.
-End
+
+Thank you,
+Martin Hu
+martinhu@cmu.edu
+
