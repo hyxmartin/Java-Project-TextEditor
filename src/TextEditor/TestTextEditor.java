@@ -1,4 +1,4 @@
-package TextEditor;
+package hw2;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -50,5 +50,30 @@ public class TestTextEditor {
 	public void test6_replaceNonExisting() {
 		fileUtilities.replace(fileOneContent, "java", "document");
 		assertEquals("No of replaced words", null, fileUtilities.searchAll(fileOneContent, "document"));
+	}
+	
+	@Test
+	public void test7_searchAllNullFileContent() {
+		assertEquals("Test null file content in search", null, fileUtilities.searchAll(null, "document") );
+	}
+	
+	@Test
+	public void test8_searchAllNullSearchString() {
+		assertEquals("Test null search string", null, fileUtilities.searchAll(fileOneContent, null) );
+	}
+	
+	@Test
+	public void test9_replaceNullFileContent() {
+		assertEquals("Test null file content in replace", 0, fileUtilities.replace(null, "file", "document") );
+	}
+	
+	@Test
+	public void test10_replaceNullOldString() {
+		assertEquals("Test null oldString in replace", 0, fileUtilities.replace(fileOneContent, null, "document") );
+	}
+	
+	@Test
+	public void test11_replaceNullNewString() {
+		assertEquals("Test null newString in replace", 0, fileUtilities.replace(fileOneContent, "file", null) );
 	}
 }
