@@ -1,4 +1,7 @@
-package TextEditor;
+//Andrew ID: yuxiangh
+//Name: Yuxiang Hu
+
+package hw2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -58,20 +61,25 @@ public class FileUtilities {
 		int index = -1;
 		int searchCount = -1;  // assign -1 because the do while loop will run before to check condition.
 		int startSearchPosition = 0;
-		do {
-			searchCount++;
-			index = fileContent.indexOf(searchString, startSearchPosition);
-			startSearchPosition = index + searchString.length();  // Start Position updates for each iteration by adding the search string length.
-		} while (index != -1);
-		startSearchPosition = 0;  // Set by Start Search point to 0
-		if (searchCount > 0) {
-			int[] indexArray = new int[searchCount];
-			// The for loop assign the index of each searched result to int[].
-			for (int i = 0; i < indexArray.length; i++) {
-				indexArray[i] = fileContent.indexOf(searchString, startSearchPosition);
-				startSearchPosition = indexArray[i] + searchString.length();
+		// Any input of the method is null will return null
+		if (fileContent == null || searchString == null || searchString.isEmpty()) {
+			return null;	
+		} else {
+			do {
+				searchCount++;
+				index = fileContent.indexOf(searchString, startSearchPosition);
+				startSearchPosition = index + searchString.length();  // Start Position updates for each iteration by adding the search string length.
+			} while (index != -1);
+			startSearchPosition = 0;  // Set by Start Search point to 0
+			if (searchCount > 0) {
+				int[] indexArray = new int[searchCount];
+				// The for loop assign the index of each searched result to int[].
+				for (int i = 0; i < indexArray.length; i++) {
+					indexArray[i] = fileContent.indexOf(searchString, startSearchPosition);
+					startSearchPosition = indexArray[i] + searchString.length();
+				}
+				return indexArray;
 			}
-			return indexArray;
 		}
 		return null;
 	}
@@ -89,15 +97,21 @@ public class FileUtilities {
 		int index = - 1;
 		// using while loop to to search next starting position, 
 		// if nothing found, the index is -1
-		while (fileContent.indexOf(oldString, startSearchPosition) != -1) {
-			// Find index of next search.
-			index = fileContent.indexOf(oldString, startSearchPosition);
-			fileContent.replace(index, index + oldString.length(), newString);
-			// Start position changed by the searched index plus the replaced string length.
-			// In this way, it avoids incorrect replacement in case the new string has the same keyword as the old string.
-			startSearchPosition = index + newString.length();  
-			replacementCount++;  // Check count of replacement by iteration
+		// Any input of the method is null will return 0
+		if (fileContent == null || oldString == null || newString == null || oldString.isEmpty() || newString.isEmpty()) {
+			return 0;
+		} else {
+			while (fileContent.indexOf(oldString, startSearchPosition) != -1) {
+				// Find index of next search.
+				index = fileContent.indexOf(oldString, startSearchPosition);
+				fileContent.replace(index, index + oldString.length(), newString);
+				// Start position changed by the searched index plus the replaced string length.
+				// In this way, it avoids incorrect replacement in case the new string has the same keyword as the old string.
+				startSearchPosition = index + newString.length();  
+				replacementCount++;  // Check count of replacement by iteration
+			}
+			return replacementCount;
 		}
-		return replacementCount;
+
 	}
 }
