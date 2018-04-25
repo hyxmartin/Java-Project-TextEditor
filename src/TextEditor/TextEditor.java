@@ -1,13 +1,14 @@
-//Andrew ID: yuxiangh
-//Name: Yuxiang Hu
-
-package hw2;
+package TextEditor;
 
 import java.io.File;
 import java.util.Optional;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -36,15 +37,17 @@ import javafx.stage.Stage;
  * GUI as 'View', and various event-handlers as 'Controllers'  
  */
 public class TextEditor extends Application {
-
 	Stage stage;
 	BorderPane root = new BorderPane(); 	//holds all GUI components
 	TextArea fileTextArea = new TextArea(); //displays the file content
-	Label statusLabel = new Label();		//shows the status of various actions
+	Label statusLabel = new Label();				//shows the status of various actions
 	String searchString;					//used in Search function
 	StringBuilder fileContent;				//holds the file text
-
+	
 	FileUtilities fileUtilities = new FileUtilities();
+	
+	BooleanProperty isFileClosed = new SimpleBooleanProperty(false);
+	StringProperty fileContentProperty = new SimpleStringProperty();
 
 	public static void main(String[] args) {
 		launch(args);
@@ -55,7 +58,7 @@ public class TextEditor extends Application {
 		this.stage = stage;
 		setScreen();
 		Scene scene = new Scene(root, 500, 600);
-		stage.setTitle("Text Reader");
+		stage.setTitle("Text Editor");
 		stage.setScene(scene);
 		stage.show();
 	}
@@ -69,13 +72,15 @@ public class TextEditor extends Application {
 		//attach File menu items and their event handlers
 		MenuItem openFileMenuItem = new MenuItem("Open");
 		openFileMenuItem.setOnAction(new OpenFileHandler());
+		MenuItem saveFileMenuItem = new MenuItem("Save");
+		saveFileMenuItem.setOnAction(new SaveFileHandler());
 		MenuItem closeFileMenuItem = new MenuItem("Close");
 		closeFileMenuItem.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent event) {
 				fileTextArea.clear();
 				statusLabel.setText("");
-				fileContent.setLength(0);
+				isFileClosed.set(true);  //Set to disable menu options
 			}
 		});
 		MenuItem exitFileMenuItem = new MenuItem("Exit");
@@ -88,6 +93,8 @@ public class TextEditor extends Application {
 		replaceToolsMenuItem.setOnAction(new ReplaceToolHandler());
 		MenuItem wordCountToolsMenuItem = new MenuItem("Word Count");
 		wordCountToolsMenuItem.setOnAction(new WordCountToolHandler());
+		MenuItem uniqueWordCountToolsMenuItem = new MenuItem("Unique word count");
+		uniqueWordCountToolsMenuItem.setOnAction(new UniqueWordCountToolHandler());
 
 		//set Help menu
 		MenuItem aboutHelpMenuItem = new MenuItem("About");
@@ -96,8 +103,8 @@ public class TextEditor extends Application {
 		//set menubar
 		MenuBar menuBar = new MenuBar();
 
-		fileMenu.getItems().addAll(openFileMenuItem, closeFileMenuItem, new SeparatorMenuItem(), exitFileMenuItem);
-		toolsMenu.getItems().addAll(searchToolsMenuItem, replaceToolsMenuItem, new SeparatorMenuItem(),wordCountToolsMenuItem);
+		fileMenu.getItems().addAll(openFileMenuItem, saveFileMenuItem, closeFileMenuItem, new SeparatorMenuItem(), exitFileMenuItem);
+		toolsMenu.getItems().addAll(searchToolsMenuItem, replaceToolsMenuItem, new SeparatorMenuItem(),wordCountToolsMenuItem, uniqueWordCountToolsMenuItem);
 		helpMenu.getItems().addAll(aboutHelpMenuItem);
 		menuBar.getMenus().addAll(fileMenu, toolsMenu, helpMenu);	
 
@@ -109,6 +116,13 @@ public class TextEditor extends Application {
 		root.setTop(menuBar);
 		root.setCenter(fileTextArea);//Added for display content.
 		root.setBottom(statusLabel);
+		
+		//initialize bindings
+		isFileClosed.set(true);
+		toolsMenu.disableProperty().bind(isFileClosed);
+		saveFileMenuItem.disableProperty().bind(isFileClosed);
+		closeFileMenuItem.disableProperty().bind(isFileClosed);
+		fileTextArea.textProperty().bindBidirectional(fileContentProperty);
 	}
 
 	/**OpenHandler provides the functionality for opening a file when the File-Open menu option 
@@ -122,7 +136,8 @@ public class TextEditor extends Application {
 			if (selectedFile != null) {
 				fileContent = fileUtilities.readFile(selectedFile.getAbsolutePath());
 				statusLabel.setText(selectedFile.getName());
-				fileTextArea.setText(fileContent.toString());
+				fileContentProperty.setValue(fileContent.toString());  //property-binding
+				isFileClosed.set(false);  //Set to enable menu options
 			}
 		}
 	}
@@ -158,6 +173,7 @@ public class TextEditor extends Application {
 		    int[] searchResults;
 		    int caretPosition;
 		    searchString = getString("search");
+		    fileContent = new StringBuilder(fileContentProperty.getValue());  //Add for get the current fileContectProperty
 		    searchResults = fileUtilities.searchAll(fileContent, searchString);
 			//If the search String is null then it will display "Search Cancelled"
 		    if (searchString == null || searchString.isEmpty()) {
@@ -185,19 +201,19 @@ public class TextEditor extends Application {
 		}
 	}
 
-	/**ReplaceToolHandler provides the functionality for searching and replaceing a string when the Tool-Replace menu option
+	/**ReplaceToolHandler provides the functionality for searching and replacing a string when the Tool-Replace menu option
 	 * is selected by the user. It uses the getString() method as a helper method to capture the user input. 
 	 */
 	private class ReplaceToolHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
-			
 		    String searchString = new String();
 		    int[] searchResults;
 		    String replaceString = new String();
 		    int caretPosition;
 		    int numberReplaced;
 		    searchString = getString("search");
+		    fileContent = new StringBuilder(fileContentProperty.getValue());  //Add for get the current fileContectProperty
 		    searchResults = fileUtilities.searchAll(fileContent, searchString);
 		    //If the search String is null then it will display "Search Cancelled"
 			if (searchString == null || searchString.isEmpty()) {
@@ -227,7 +243,7 @@ public class TextEditor extends Application {
 					} else {
 						//If replace string is valid, then replace searched string with replace string.
 						numberReplaced = fileUtilities.replace(fileContent, searchString, replaceString);
-						fileTextArea.setText(fileContent.toString());
+						fileContentProperty.setValue(fileContent.toString());
 						statusLabel.setText(searchString + " found and replaced with " + replaceString +" at " + numberReplaced + " places");
 					}
 				}
@@ -242,6 +258,7 @@ public class TextEditor extends Application {
 		@Override
 		public void handle(ActionEvent event) {
 			//If content is valid then it displays the count of words, if not display 0 word.
+			fileContent = new StringBuilder(fileContentProperty.getValue());  //Add for get the current fileContectProperty
 			if (fileContent ==  null || fileContent.toString().isEmpty()) {
 				statusLabel.setText("0 word");
 			} else {
@@ -250,7 +267,7 @@ public class TextEditor extends Application {
 			
 		}
 	}
-
+	
 	private class AboutHandler implements EventHandler<ActionEvent> {
 		@Override
 		public void handle(ActionEvent event) {
@@ -268,4 +285,36 @@ public class TextEditor extends Application {
 			alert.showAndWait();
 		}
 	}
+	
+	
+	/**UniqueWordCountToolHadler provides the count of unique words in the text file currently open */
+	private class UniqueWordCountToolHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			//If content is valid then it displays the count of words, if not display 0 word.
+			fileContent = new StringBuilder(fileContentProperty.getValue());  //Add for get the current fileContectProperty
+			if (fileContent ==  null || fileContent.toString().isEmpty()) {
+				statusLabel.setText("0 word");
+			} else {
+				statusLabel.setText(fileUtilities.countUniqueWords(fileContent)+" unique words");
+			}
+			
+		}
+	}
+	
+	/**SaveFileHandler provides the FileChooser dialog box to save the current file*/
+	private class SaveFileHandler implements EventHandler<ActionEvent> {
+		@Override
+		public void handle(ActionEvent event) {
+			FileChooser fc = new FileChooser();
+			File selectedFile = fc.showSaveDialog(stage);
+			fileContent = new StringBuilder(fileContentProperty.getValue());
+			if (selectedFile != null) {
+				statusLabel.setText(fileUtilities.writeFile(selectedFile.getAbsolutePath(), fileContent.toString()));
+			}
+		}
+	}
+	
+
+
 }

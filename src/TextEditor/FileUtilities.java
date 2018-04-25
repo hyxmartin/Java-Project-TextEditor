@@ -1,11 +1,15 @@
-//Andrew ID: yuxiangh
-//Name: Yuxiang Hu
 
-package hw2;
 
+package TextEditor;
+
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
 /** FileUtilities class provides some basic tools to read a file, count words, search and replace strings. 
  */
@@ -17,7 +21,6 @@ public class FileUtilities {
 	 * it preserves the line breaks. It then returns the StringBuilder.
 	 */
 	public StringBuilder readFile(String filename)  {
-		//write your code here
 		StringBuilder tempStringBuilder = new StringBuilder();
 		File file = new File(filename);
 		// Using try catch to capture if file is not found.
@@ -34,13 +37,26 @@ public class FileUtilities {
 	}
 	
 	/** wordCount method receives text content in a StringBuilder object and 
-	 * returns its word count. It considers white-space as a word-delimiter.  
+	 * returns its word count.  It considers any character not an alphabet, number, or a single quote as a word-delimiter.   
 	 */
 	int countWords(StringBuilder fileContent) {
-		//write your code here
 		int wordCount = 0;
-		String[] words = fileContent.toString().split("\\s");  // Saved words separated by white-space into an array.
+		String[] words = fileContent.toString().split("[^a-zA-Z0-9']+");  // Saved words separated by any character not an alphabet, number, or a single quote.
 		wordCount = words.length;
+		return wordCount;
+	}
+	
+	/** countUniqueWords method receives text content in a StringBuilder object and 
+	 * returns its unique word count. It considers any character not an alphabet, number, or a single quote as a word-delimiter.  
+	 */
+	int countUniqueWords(StringBuilder fileContent) {
+		Set<Word> uniqueWordSet = new HashSet<>();
+		int wordCount = 0;
+		String[] words = fileContent.toString().split("[^a-zA-Z0-9']+");  // Saved words separated by any character not an alphabet, number, or a single quote.
+		for (String w : words) {
+			uniqueWordSet.add(new Word(w.toLowerCase()));  // Use hashset to ensure uniqueness
+		}
+		wordCount = uniqueWordSet.size();
 		return wordCount;
 	}
 	
@@ -57,7 +73,6 @@ public class FileUtilities {
 	 * the searchString is found, and second time to store its positions. 
 	 */
 	int[] searchAll(StringBuilder fileContent, String searchString) {
-		//write your code here
 		int index = -1;
 		int searchCount = -1;  // assign -1 because the do while loop will run before to check condition.
 		int startSearchPosition = 0;
@@ -91,7 +106,6 @@ public class FileUtilities {
 	 * If oldString is not found, it means that no replacement happens. In such a case, it returns 0.
 	 */
 	int replace(StringBuilder fileContent, String oldString, String newString) {
-		//write your code here
 		int replacementCount = 0;
 		int startSearchPosition = 0;
 		int index = - 1;
@@ -112,6 +126,28 @@ public class FileUtilities {
 			}
 			return replacementCount;
 		}
-
 	}
+	
+	
+	/**writeFile() method takes filename and fileContent as a string parameter. 
+	 * It returns “File saved” from within try-catch block of BufferedWriter when the file is successfully written.
+	 * it should return ‘Could not save file’ from the catch block. 
+	 * Whatever is returned, the handler updates statusLabel with it.
+	 */
+	public String writeFile(String filename, String fileContent)  {
+		String status = null;
+		try {
+	        FileWriter filerWriter = new FileWriter(filename);
+	        BufferedWriter bw = new BufferedWriter(filerWriter);  // Use BufferedWriter to handle file writing.
+	        bw.write(fileContent);
+	        bw.close();
+	        filerWriter.close();
+	        status = "File Saved";
+	    } catch (IOException e) {
+	        e.printStackTrace();
+	        status = "Could not save file";
+	    } 
+		return status;
+	}
+	
 }

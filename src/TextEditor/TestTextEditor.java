@@ -1,4 +1,4 @@
-package hw2;
+package TextEditor;
 
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -21,7 +21,7 @@ public class TestTextEditor {
 	
 	@Test
 	public void test2_wordCount() { 
-		assertEquals("Word count for fileOne", 24, fileUtilities.countWords(fileOneContent));
+		assertEquals("Word count for fileOne", 27, fileUtilities.countWords(fileOneContent));
 	}
 	
 	@Test
@@ -43,7 +43,7 @@ public class TestTextEditor {
 	public void test5_replaceExisting() {
 		fileUtilities.replace(fileOneContent, "file", "document");
 		assertEquals("No of replaced words", 2, fileUtilities.searchAll(fileOneContent, "document").length);
-		assertEquals("Number of words in replaced text", 24, fileUtilities.countWords(fileOneContent));
+		assertEquals("Number of words in replaced text", 27, fileUtilities.countWords(fileOneContent));
 	}
 	
 	@Test
@@ -76,4 +76,11 @@ public class TestTextEditor {
 	public void test11_replaceNullNewString() {
 		assertEquals("Test null newString in replace", 0, fileUtilities.replace(fileOneContent, "file", null) );
 	}
+	
+	@Test
+	public void test12_countUniqueWords() {
+		assertEquals("Unique word count for fileOne", 23, fileUtilities.countUniqueWords(fileOneContent));
+	}
+	
+	
 }
